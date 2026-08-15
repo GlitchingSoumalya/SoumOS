@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<!-- saved from url=(0054)file:///C:/Users/SOUMALYA/OneDrive/Desktop/SOUMOS.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOUMOS Environment</title>
+    <style>
+        /* --- Core System Styling --- */
+        body, html {
+            margin: 0; padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            height: 100vh; overflow: hidden;
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            color: white; user-select: none;
+        }
+
+        .desktop {
+            position: relative; height: calc(100vh - 65px);
+            padding: 20px; box-sizing: border-box;
+            display: flex; flex-direction: column; gap: 15px; flex-wrap: wrap;
+            align-content: flex-start;
+        }
+
+        .icon {
+            width: 85px; text-align: center; cursor: pointer;
+            padding: 10px; border-radius: 8px; transition: background 0.2s ease;
+        }
+
+        .icon:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+
+        .icon-img { font-size: 38px; margin-bottom: 5px; }
+        .icon span { font-size: 13px; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); display: block; }
+
+        /* --- Taskbar Styling --- */
+        .taskbar {
+            position: absolute; bottom: 0; width: 100%; height: 65px;
+            background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(15px);
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 20px; box-sizing: border-box;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 100;
+        }
+
+        .logo-button {
+            padding: 5px 15px; background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer; transition: all 0.2s ease;
+        }
+
+        .logo-button:hover {
+            background: rgba(0, 120, 215, 0.2); border-color: #0078D7;
+            box-shadow: 0 0 10px rgba(0, 120, 215, 0.5);
+        }
+
+        .ascii-logo {
+            margin: 0; font-family: monospace; font-size: 8px; line-height: 1.1;
+            color: #00fa9a; font-weight: bold; text-shadow: 0 0 5px rgba(0, 250, 154, 0.4);
+        }
+
+        .time { font-size: 14px; font-weight: 500; letter-spacing: 0.5px; }
+
+        /* --- Window System Styling --- */
+        .window {
+            position: absolute; top: 8%; left: 20%;
+            width: 640px; height: 500px; 
+            background: #ffffff; color: #333;
+            border-radius: 8px; box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+            display: none; flex-direction: column; overflow: hidden; z-index: 10;
+        }
+
+        .title-bar {
+            background: #f1f1f1; padding: 10px 15px;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid #ccc; cursor: grab;
+        }
+
+        .title-bar:active { cursor: grabbing; }
+
+        .close-btn {
+            background: #ff5c5c; border: none; color: transparent;
+            border-radius: 50%; width: 15px; height: 15px;
+            cursor: pointer; transition: background 0.2s;
+        }
+
+        .close-btn:hover { background: #ff1c1c; color: white; display: flex; justify-content: center; align-items: center; font-size: 10px; }
+
+        .window-content {
+            padding: 20px; flex-grow: 1; background: #fafafa;
+            font-size: 16px; line-height: 1.5; overflow-y: auto; display: flex; flex-direction: column;
+        }
+
+        /* --- App Specific UI Styling Matrix --- */
+        /* Calculator */
+        .calc-container { display: flex; flex-direction: column; gap: 10px; height: 100%; }
+        .calc-display { padding: 15px; font-size: 24px; text-align: right; border: 1px solid #ccc; background: #eee; border-radius: 5px; }
+        .calc-buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; flex-grow: 1; }
+        .calc-buttons button { padding: 10px; font-size: 18px; cursor: pointer; border: 1px solid #ccc; background: #fff; border-radius: 5px; transition: 0.1s; }
+        .calc-buttons button:hover { background: #e0e0e0; }
+        .calc-buttons button.op { background: #f9f9f9; font-weight: bold; color: #0078D7; }
+        
+        /* File Manager Grid */
+        .fm-container { display: flex; height: 100%; }
+        .fm-sidebar { width: 130px; border-right: 1px solid #ddd; padding-right: 15px; font-size: 14px; font-weight: bold; color: #555; }
+        .fm-sidebar ul { list-style: none; padding: 0; margin-top: 10px; }
+        .fm-sidebar li { margin-bottom: 10px; cursor: pointer; }
+        .fm-content { flex-grow: 1; padding-left: 15px; display: flex; flex-wrap: wrap; gap: 20px; align-content: flex-start; overflow-y: auto; }
+        .fm-item { width: 90px; text-align: center; position: relative; padding: 8px 5px; border-radius: 5px; transition: background 0.1s; }
+        .fm-item:hover { background: #e5f3ff; }
+        .fm-icon { font-size: 35px; margin-bottom: 5px; cursor: pointer; }
+        .fm-name { font-size: 12px; word-wrap: break-word; color: #1e293b; font-weight: 500; cursor: pointer; }
+        .fm-action-btn { position: absolute; top: 2px; right: 2px; background: #ff5c5c; color: white; border: none; border-radius: 3px; font-size: 10px; padding: 2px 5px; cursor: pointer; display: none; }
+        .fm-item:hover .fm-action-btn { display: block; }
+        .fm-action-btn:hover { background: #d93d3d; }
+
+        /* Trash List UI */
+        .trash-list { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .trash-list th, .trash-list td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; font-size: 14px; }
+        .trash-list th { background: #f1f5f9; color: #475569; }
+        .trash-btn { padding: 4px 8px; font-size: 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin-right: 5px; }
+        .btn-restore { background: #2ed573; color: white; }
+        .btn-download { background: #0078D7; color: white; }
+        .btn-burn { background: #ff4757; color: white; }
+
+        /* Dynamic Calendar */
+        .cal-container { text-align: center; height: 100%; display: flex; flex-direction: column; }
+        .cal-header-wrapper { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .cal-header { font-size: 22px; font-weight: bold; color: #0078D7; }
+        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; flex-grow: 1; }
+        .cal-day-header { font-weight: bold; background: #ddd; padding: 8px 0; border-radius: 4px; font-size: 14px;}
+        .cal-day { padding: 10px 0; background: #fff; border: 1px solid #eee; border-radius: 4px; font-size: 14px; display: flex; align-items: center; justify-content: center; }
+        .cal-today { background: #0078D7; color: white; font-weight: bold; border: none; box-shadow: 0 4px 10px rgba(0,120,215,0.4); }
+
+        /* System Standard Components */
+        .system-btn { padding: 8px 15px; background: #0078D7; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .system-btn:hover { background: #005a9e; }
+        .system-input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; flex-grow: 1; outline: none; font-size: 14px; }
+
+        /* Browser Portal Styling */
+        .portal-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px; }
+        .portal-card { background: #f0f4f8; padding: 12px; border-radius: 6px; text-decoration: none; color: #333; text-align: center; font-weight: 500; border: 1px solid #d0d7de; transition: transform 0.1s, background 0.2s; }
+        .portal-card:hover { background: #e1e8ed; transform: scale(1.02); }
+
+        /* Expanding Arcade Launcher Matrix */
+        .game-menu-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; max-height: 100%; overflow-y: auto; padding: 5px; }
+        .game-card { background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 10px; padding: 15px 8px; text-align: center; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .game-card:hover { transform: translateY(-4px); border-color: #0078D7; background: #f0f7ff; box-shadow: 0 8px 12px rgba(0,120,215,0.1); }
+        .game-card-icon { font-size: 36px; margin-bottom: 5px; }
+        .game-card-title { font-weight: bold; font-size: 15px; color: #1e293b; margin-bottom: 3px; }
+        .game-card-desc { font-size: 11px; color: #64748b; line-height: 1.3; }
+        .game-canvas { display: block; margin: 0 auto; border-radius: 6px; border: 2px solid #333; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="desktop">
+        <div class="icon" onclick="openApp(&#39;About SOUMOS&#39;, &#39;Welcome to SOUMOS! &lt;br&gt;&lt;br&gt;Version 5.0 unlocks multi-game extensions, a real hardware file exporter framework, and background trash storage protocols.&#39;)">
+            <div class="icon-img">💻</div>
+            <span>About</span>
+        </div>
+        <div class="icon" onclick="launchFileManager()">
+            <div class="icon-img">📁</div>
+            <span>Files</span>
+        </div>
+        <div class="icon" onclick="launchRecycleBin()">
+            <div class="icon-img">🗑️</div>
+            <span>Recycle Bin</span>
+        </div>
+        <div class="icon" onclick="launchCalculator()">
+            <div class="icon-img">🧮</div>
+            <span>Calculator</span>
+        </div>
+        <div class="icon" onclick="launchCalendar()">
+            <div class="icon-img">📅</div>
+            <span>Calendar</span>
+        </div>
+        <div class="icon" onclick="launchNotepad()">
+            <div class="icon-img">📝</div>
+            <span>Notes</span>
+        </div>
+        <div class="icon" onclick="launchBrowserPortal()">
+            <div class="icon-img">🌐</div>
+            <span>Browser</span>
+        </div>
+        <div class="icon" onclick="launchGameCenter()">
+            <div class="icon-img">🎮</div>
+            <span>Game Center</span>
+        </div>
+    </div>
+
+    <div id="app-window" class="window" style="display: flex;">
+        <div class="title-bar" id="title-bar">
+            <strong id="window-title">File Explorer</strong>
+            <button class="close-btn" onclick="closeApp()">X</button>
+        </div>
+        <div class="window-content" id="window-content">
+            <div class="fm-container">
+                <div class="fm-sidebar">Quick Access<ul><li>📌 Desktop</li><li>📥 Downloads</li></ul></div>
+                <div class="fm-content">
+                <div class="fm-item"><div class="fm-icon">📁</div><div class="fm-name">System</div></div>
+                <div class="fm-item"></div>
+            </div>
+            </div></div>
+    </div>
+
+    <div class="taskbar">
+        <div class="logo-button">
+<pre class="ascii-logo"> SSSSS   OOOOO   U   U  M   M   OOOOO   SSSSS 
+S       O     O  U   U  MM MM  O     O S      
+ SSSS   O     O  U   U  M M M  O     O  SSSS  
+     S  O     O  U   U  M   M  O     O      S 
+SSSSS    OOOOO    UUU   M   M   OOOOO  SSSSS  </pre>
+        </div>
+        <div class="time" id="clock">4:58 PM</div>
+    </div>
+
+    <script>
+        // --- 1. Core Architecture Storage Drivers ---
+        if (!localStorage.getItem('soumos_vfs')) {
+            const initialVFS = [
+                { name: 'welcome.txt', content: 'Welcome to your upgrade! Delete files here to send them to the Recycle Bin. From there, you can restore them or download them onto your actual machine!', type: 'text' }
+            ];
+            localStorage.setItem('soumos_vfs', JSON.stringify(initialVFS));
+        }
+        if (!localStorage.getItem('soumos_trash')) {
+            localStorage.setItem('soumos_trash', JSON.stringify([]));
+        }
+
+        // --- 2. Clock Engine ---
+        function updateClock() {
+            const now = new Date();
+            let hours = now.getHours(), minutes = now.getMinutes();
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12; hours = hours ? hours : 12; 
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            document.getElementById('clock').innerText = `${hours}:${minutes} ${ampm}`;
+        }
+        setInterval(updateClock, 1000); updateClock();
+
+        // --- 3. Window Managers ---
+        const appWindow = document.getElementById('app-window');
+        const windowTitle = document.getElementById('window-title');
+        const windowContent = document.getElementById('window-content');
+
+        let activeApp = "";
+        let currentGame = ""; 
+
+        function openApp(title, htmlContent) {
+            activeApp = title;
+            windowTitle.innerText = title;
+            windowContent.innerHTML = htmlContent;
+            appWindow.style.display = 'flex';
+        }
+
+        function closeApp() { 
+            activeApp = ""; currentGame = "";
+            appWindow.style.display = 'none'; 
+            windowContent.innerHTML = ""; 
+        }
+
+        // Window Dragging Routines
+        const titleBar = document.getElementById('title-bar');
+        let isDragging = false, offsetX, offsetY;
+
+        titleBar.addEventListener('mousedown', (e) => {
+            if(e.target.className === 'close-btn') return;
+            isDragging = true;
+            offsetX = e.clientX - appWindow.getBoundingClientRect().left;
+            offsetY = e.clientY - appWindow.getBoundingClientRect().top;
+        });
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                appWindow.style.left = `${e.clientX - offsetX}px`;
+                appWindow.style.top = `${e.clientY - offsetY}px`;
+            }
+        });
+        document.addEventListener('mouseup', () => { isDragging = false; });
+
+        // --- 4. Productivity Applications ---
+
+        // Web Browser
+        function launchBrowserPortal() {
+            const portalHTML = `
+            <div style="display: flex; flex-direction: column; height: 100%; gap: 10px;">
+                <label style="font-size:14px; font-weight:bold; color:#555;">SOUMOS Secure Web Search Engine</label>
+                <form action="https://html.duckduckgo.com/html" method="post" target="_blank" style="display: flex; gap: 10px; margin-bottom:10px;">
+                    <input type="text" name="q" class="system-input" placeholder="Search the web securely via DuckDuckGo..." required>
+                    <button type="submit" class="system-btn">Search</button>
+                </form>
+                <hr style="border:0; border-top:1px solid #ddd; width:100%; margin:5px 0;">
+                <label style="font-size:14px; font-weight:bold; color:#555;">Verified Bookmarks</label>
+                <div class="portal-grid">
+                    <a href="https://www.wikipedia.org" target="_blank" class="portal-card">🌐 Open Wikipedia</a>
+                    <a href="https://w3schools.com" target="_blank" class="portal-card">💻 W3Schools Coding</a>
+                </div>
+            </div>`;
+            openApp('Web Browser', portalHTML);
+        }
+
+        // Notepad Engine
+        function launchNotepad(fileName = 'notes.txt', fileContent = '') {
+            const notepadHTML = `
+            <div style="display: flex; flex-direction: column; height: 100%; gap: 10px;">
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <label style="font-size: 14px; font-weight: bold; color: #555;">File Name:</label>
+                    <input type="text" id="notepad-filename" class="system-input" value="${fileName}" placeholder="document.txt" style="max-width: 220px;">
+                </div>
+                <textarea id="notepad-text" style="flex-grow: 1; resize: none; border: 1px solid #ccc; border-radius: 4px; outline: none; padding: 10px; font-family: inherit; font-size: 16px;">${fileContent}</textarea>
+                <div style="display: flex; justify-content: flex-end; align-items: center; gap: 10px;">
+                    <span id="save-status" style="font-size: 14px; color: #0078D7; font-weight: bold;"></span>
+                    <button class="system-btn" onclick="saveNotesToVFS()">Save to Storage</button>
+                </div>
+            </div>`;
+            openApp('Notepad', notepadHTML);
+        }
+
+        window.saveNotesToVFS = function() {
+            let filename = document.getElementById('notepad-filename').value.trim() || 'untitled.txt';
+            if (!filename.endsWith('.txt')) filename += '.txt';
+            const content = document.getElementById('notepad-text').value;
+
+            let vfs = JSON.parse(localStorage.getItem('soumos_vfs')) || [];
+            let existingIdx = vfs.findIndex(f => f.name.toLowerCase() === filename.toLowerCase());
+            
+            if (existingIdx > -1) { vfs[existingIdx].content = content; } 
+            else { vfs.push({ name: filename, content: content, type: 'text' }); }
+
+            localStorage.setItem('soumos_vfs', JSON.stringify(vfs));
+            const status = document.getElementById('save-status'); status.innerText = 'Saved to Storage!';
+            setTimeout(() => { status.innerText = ''; }, 2000);
+        }
+
+        // File Explorer Framework
+        function launchFileManager() {
+            let vfs = JSON.parse(localStorage.getItem('soumos_vfs')) || [];
+            let contentGrid = `
+                <div class="fm-item"><div class="fm-icon">📁</div><div class="fm-name">System</div></div>
+                <div class="fm-item"><div class="fm-icon">📁</div><div class="fm-name">Games</div></div>
+            `;
+            
+            vfs.forEach(file => {
+                let escapedName = file.name.replace(/'/g, "\\'");
+                contentGrid += `
+                    <div class="fm-item">
+                        <button class="fm-action-btn" onclick="event.stopPropagation(); deleteFileRoutine('${escapedName}')">🗑️</button>
+                        <div class="fm-icon" onclick="openFileFromVFS('${escapedName}')">📄</div>
+                        <div class="fm-name" onclick="openFileFromVFS('${escapedName}')">${file.name}</div>
+                    </div>
+                `;
+            });
+
+            const fmHTML = `
+            <div class="fm-container">
+                <div class="fm-sidebar">Quick Access<ul><li>📌 Desktop</li><li>📥 Downloads</li></ul></div>
+                <div class="fm-content">${contentGrid}</div>
+            </div>`;
+            openApp('File Explorer', fmHTML);
+        }
+
+        window.openFileFromVFS = function(targetName) {
+            let vfs = JSON.parse(localStorage.getItem('soumos_vfs')) || [];
+            let fileObj = vfs.find(f => f.name === targetName);
+            if (fileObj) { launchNotepad(fileObj.name, fileObj.content); }
+        }
+
+        window.deleteFileRoutine = function(targetName) {
+            let vfs = JSON.parse(localStorage.getItem('soumos_vfs')) || [];
+            let trash = JSON.parse(localStorage.getItem('soumos_trash')) || [];
+            
+            let targetIdx = vfs.findIndex(f => f.name === targetName);
+            if (targetIdx > -1) {
+                let removed = vfs.splice(targetIdx, 1)[0];
+                trash.push(removed);
+                localStorage.setItem('soumos_vfs', JSON.stringify(vfs));
+                localStorage.setItem('soumos_trash', JSON.stringify(trash));
+                launchFileManager(); // Refresh View
+            }
+        }
+
+        // --- Recycle Bin App Engine ---
+        function launchRecycleBin() {
+            let trash = JSON.parse(localStorage.getItem('soumos_trash')) || [];
+            let rows = "";
+            
+            if(trash.length === 0) {
+                rows = `<tr><td colspan="3" style="text-align:center; color:#94a3b8;">Recycle Bin is empty.</td></tr>`;
+            } else {
+                trash.forEach((file, idx) => {
+                    let escapedName = file.name.replace(/'/g, "\\'");
+                    rows += `
+                    <tr>
+                        <td style="font-weight:500; color:#334155;">📄 ${file.name}</td>
+                        <td>Virtual Note Document</td>
+                        <td>
+                            <button class="trash-btn btn-restore" onclick="restoreFromTrash(${idx})">Restore</button>
+                            <button class="trash-btn btn-download" onclick="downloadToHardware('${escapedName}', ${idx})">Download</button>
+                            <button class="trash-btn btn-burn" onclick="burnFromTrash(${idx})">Delete Forever</button>
+                        </td>
+                    </tr>`;
+                });
+            }
+
+            const trashHTML = `
+            <div style="display:flex; flex-direction:column; height:100%;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:8px;">
+                    <span style="font-size:14px; font-weight:bold; color:#475569;">System Trash Bin Manager</span>
+                    <button class="system-btn" style="background:#ff4757; padding:5px 10px; font-size:12px;" onclick="emptyTrashAll()">Empty Recycle Bin</button>
+                </div>
+                <div style="flex-grow:1; overflow-y:auto;">
+                    <table class="trash-list">
+                        <thead>
+                            <tr><th>Name</th><th>Type</th><th>Actions Available</th></tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                </div>
+            </div>`;
+            openApp('Recycle Bin', trashHTML);
+        }
+
+        window.restoreFromTrash = function(idx) {
+            let trash = JSON.parse(localStorage.getItem('soumos_trash')) || [];
+            let vfs = JSON.parse(localStorage.getItem('soumos_vfs')) || [];
+            let item = trash.splice(idx, 1)[0];
+            vfs.push(item);
+            localStorage.setItem('soumos_trash', JSON.stringify(trash));
+            localStorage.setItem('soumos_vfs', JSON.stringify(vfs));
+            launchRecycleBin();
+        }
+
+        window.burnFromTrash = function(idx) {
+            let trash = JSON.parse(localStorage.getItem('soumos_trash')) || [];
+            trash.splice(idx, 1);
+            localStorage.setItem('soumos_trash', JSON.stringify(trash));
+            launchRecycleBin();
+        }
+
+        window.emptyTrashAll = function() {
+            localStorage.setItem('soumos_trash', JSON.stringify([]));
+            launchRecycleBin();
+        }
+
+        // Hardware Exporter System: Downloads virtual asset directly to the user's real host machine
+        window.downloadToHardware = function(filename, idx) {
+            let trash = JSON.parse(localStorage.getItem('soumos_trash')) || [];
+            let fileObj = trash[idx];
+            if(!fileObj) return;
+
+            let blob = new Blob([fileObj.content], { type: "text/plain;charset=utf-8" });
+            let trigger = document.createElement("a");
+            trigger.href = URL.createObjectURL(blob);
+            trigger.download = filename;
+            document.body.appendChild(trigger);
+            trigger.click();
+            document.body.removeChild(trigger);
+            URL.revokeObjectURL(trigger.href);
+        }
+
+        // Calculator Utilities
+        function launchCalculator() {
+            const calcHTML = `
+            <div class="calc-container">
+                <input type="text" id="calc-display" class="calc-display" disabled value="" />
+                <div class="calc-buttons">
+                    <button onclick="calcType('7')">7</button><button onclick="calcType('8')">8</button><button onclick="calcType('9')">9</button><button class="op" onclick="calcType('/')">÷</button>
+                    <button onclick="calcType('4')">4</button><button onclick="calcType('5')">5</button><button onclick="calcType('6')">6</button><button class="op" onclick="calcType('*')">×</button>
+                    <button onclick="calcType('1')">1</button><button onclick="calcType('2')">2</button><button onclick="calcType('3')">3</button><button class="op" onclick="calcType('-')">-</button>
+                    <button onclick="calcClear()">C</button><button onclick="calcType('0')">0</button><button onclick="calcEval()" style="background:#0078D7; color:white; font-weight:bold;">=</button><button class="op" onclick="calcType('+')">+</button>
+                </div>
+            </div>`;
+            openApp('Calculator', calcHTML);
+        }
+        window.calcType = function(val) { document.getElementById('calc-display').value += val; }
+        window.calcClear = function() { document.getElementById('calc-display').value = ''; }
+        window.calcEval = function() {
+            try { document.getElementById('calc-display').value = eval(document.getElementById('calc-display').value) || ''; } 
+            catch (e) { document.getElementById('calc-display').value = 'Error'; }
+        }
+
+        // Calendar Engine
+        let calTargetDate = new Date();
+        function launchCalendar() { calTargetDate = new Date(); renderCalendarState(); }
+        function changeMonth(offset) { calTargetDate.setMonth(calTargetDate.getMonth() + offset); renderCalendarState(); }
+        function renderCalendarState() {
+            const year = calTargetDate.getFullYear(), month = calTargetDate.getMonth(), realToday = new Date();
+            const monthName = calTargetDate.toLocaleString('default', { month: 'long' });
+            const firstDay = new Date(year, month, 1).getDay(), daysInMonth = new Date(year, month + 1, 0).getDate();
+            let calHTML = `
+            <div class="cal-container"><div class="cal-header-wrapper"><button class="system-btn" onclick="changeMonth(-1)">◀ Prev</button><div class="cal-header">${monthName} ${year}</div><button class="system-btn" onclick="changeMonth(1)">Next ▶</button></div><div class="cal-grid">
+            <div class="cal-day-header">Su</div><div class="cal-day-header">Mo</div><div class="cal-day-header">Tu</div><div class="cal-day-header">We</div><div class="cal-day-header">Th</div><div class="cal-day-header">Fr</div><div class="cal-day-header">Sa</div>`;
+            for (let i = 0; i < firstDay; i++) calHTML += `<div class="cal-day" style="border:none; background:transparent;"></div>`;
+            for (let i = 1; i <= daysInMonth; i++) {
+                let isToday = (i === realToday.getDate() && month === realToday.getMonth() && year === realToday.getFullYear()) ? 'cal-today' : '';
+                calHTML += `<div class="cal-day ${isToday}">${i}</div>`;
+            }
+            openApp('Calendar', calHTML + `</div></div>`);
+        }
+
+        // --- 5. Centralized Arcade Launcher App ---
+        function launchGameCenter() {
+            currentGame = "";
+            const menuHTML = `
+            <div style="display:flex; flex-direction:column; height:100%;">
+                <div style="font-size:14px; font-weight:bold; color:#475569; margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:5px;">System Integrated Arcade Suite</div>
+                <div class="game-menu-container">
+                    <div class="game-card" onclick="loadSubGame('flappy')">
+                        <div class="game-card-icon">🐦</div>
+                        <div class="game-card-title">Flappy Bird</div>
+                        <div class="game-card-desc">Navigate narrow pipe systems using spacebar taps.</div>
+                    </div>
+                    <div class="game-card" onclick="loadSubGame('dino')">
+                        <div class="game-card-icon">🦖</div>
+                        <div class="game-card-title">Dino Run</div>
+                        <div class="game-card-desc">Leap over fast desert cactus obstacles safely.</div>
+                    </div>
+                    <div class="game-card" onclick="loadSubGame('car')">
+                        <div class="game-card-icon">🏎️</div>
+                        <div class="game-card-title">Car Racer</div>
+                        <div class="game-card-desc">Weave through progressive high-speed lane traffic.</div>
+                    </div>
+                    <div class="game-card" onclick="loadSubGame('snake')">
+                        <div class="game-card-icon">🐍</div>
+                        <div class="game-card-title">Retro Snake</div>
+                        <div class="game-card-desc">Consume apples and expand without striking borders.</div>
+                    </div>
+                    <div class="game-card" onclick="loadSubGame('pong')">
+                        <div class="game-card-icon">🏓</div>
+                        <div class="game-card-title">Classic Pong</div>
+                        <div class="game-card-desc">Deflect the ball past the mechanical AI paddle.</div>
+                    </div>
+                </div>
+            </div>`;
+            openApp('Game Center', menuHTML);
+        }
+
+        window.loadSubGame = function(gameKey) {
+            currentGame = gameKey;
+            let canvasWidth = (gameKey === 'car') ? 400 : (gameKey === 'pong' ? 520 : 500);
+            let canvasBg = (gameKey === 'car') ? '#555' : (gameKey === 'dino' ? '#f7f7f7' : (gameKey === 'snake' ? '#111' : (gameKey === 'pong' ? '#0f172a' : '#70c5ce')));
+            
+            const frameHTML = `
+            <div style="display:flex; flex-direction:column; height:100%;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <button class="system-btn" style="background:#64748b; padding:6px 12px;" onclick="launchGameCenter()">◀ Back to Menu</button>
+                    <div style="font-weight:bold; color:#1e293b;">Score: <span id="runtime-score">0</span></div>
+                    <div style="font-size:12px; color:#64748b;" id="control-hint">Processing Controls...</div>
+                </div>
+                <canvas id="arcadeCanvas" width="${canvasWidth}" height="320" class="game-canvas" style="background:${canvasBg};"></canvas>
+            </div>`;
+            
+            windowContent.innerHTML = frameHTML;
+            
+            if(gameKey === 'flappy') runFlappyEngine();
+            if(gameKey === 'car') runCarEngine();
+            if(gameKey === 'dino') runDinoEngine();
+            if(gameKey === 'snake') runSnakeEngine();
+            if(gameKey === 'pong') runPongEngine();
+        }
+
+        // --- 6. Arcade Runtime Engine Arrays ---
+        let keysPressed = {};
+        window.onkeydown = function(e) {
+            if (activeApp === "Game Center" && ["Space","ArrowLeft","ArrowRight","KeyA","KeyD","ArrowUp","ArrowDown","KeyW","KeyS"].includes(e.code)) {
+                e.preventDefault(); 
+            }
+            keysPressed[e.code] = true;
+            if (e.code === "Space") {
+                if (currentGame === "flappy") window.fireFlappyJump();
+                if (currentGame === "dino") window.fireDinoJump();
+                if (currentGame === "car" && !window.carActive) window.resetCarGame();
+                if (currentGame === "snake" && !window.snakeAlive) window.resetSnakeGame();
+                if (currentGame === "pong" && !window.pongActive) window.resetPongGame();
+            }
+        };
+        window.onkeyup = function(e) { keysPressed[e.code] = false; };
+
+        // [GAME 1]: Flappy Bird
+        function runFlappyEngine() {
+            document.getElementById('control-hint').innerText = "Press SPACE or Click Canvas to Fly";
+            const canvas = document.getElementById('arcadeCanvas'); const ctx = canvas.getContext('2d');
+            let bird = { x: 50, y: 140, w: 20, h: 20, gravity: 0.4, velocity: 0, jump: -6.2 };
+            let pipes = []; let frame = 0; let score = 0; let alive = true;
+
+            function spawn() {
+                let gap = 95; let minH = 30; let maxH = canvas.height - gap - minH;
+                let h = Math.floor(Math.random() * (maxH - minH + 1)) + minH;
+                pipes.push({ x: canvas.width, top: h, bottom: canvas.height - h - gap, w: 42, passed: false });
+            }
+            window.fireFlappyJump = function() {
+                if (!alive) { bird.y = 140; bird.velocity = 0; pipes = []; score = 0; document.getElementById('runtime-score').innerText = 0; alive = true; }
+                else { bird.velocity = bird.jump; }
+            };
+            canvas.onclick = window.fireFlappyJump;
+
+            function render() {
+                if (currentGame !== "flappy" || activeApp !== "Game Center") return;
+                ctx.fillStyle = "#70c5ce"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                if (alive) {
+                    bird.velocity += bird.gravity; bird.y += bird.velocity;
+                    if (frame % 85 === 0) spawn(); frame++;
+                    if (bird.y + bird.h >= canvas.height || bird.y <= 0) alive = false;
+
+                    for (let i = pipes.length - 1; i >= 0; i--) {
+                        pipes[i].x -= 2.2;
+                        if (bird.x < pipes[i].x + pipes[i].w && bird.x + bird.w > pipes[i].x &&
+                           (bird.y < pipes[i].top || bird.y + bird.h > canvas.height - pipes[i].bottom)) { alive = false; }
+                        if (pipes[i].x + pipes[i].w < bird.x && !pipes[i].passed) { pipes[i].passed = true; score++; document.getElementById('runtime-score').innerText = score; }
+                        if (pipes[i].x + pipes[i].w < 0) pipes.splice(i, 1);
+                    }
+                }
+                ctx.fillStyle = "#ffde17"; ctx.fillRect(bird.x, bird.y, bird.w, bird.h);
+                ctx.fillStyle = "#000"; ctx.fillRect(bird.x + 13, bird.y + 4, 4, 4); 
+                ctx.fillStyle = "#2ed573"; pipes.forEach(p => { ctx.fillRect(p.x, 0, p.w, p.top); ctx.fillRect(p.x, canvas.height - p.bottom, p.w, p.bottom); });
+
+                if (!alive) { ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.fillStyle = "#fff"; ctx.font = "16px Arial"; ctx.textAlign = "center"; ctx.fillText("Game Over! Space or Click to Restart", canvas.width/2, canvas.height/2); }
+                requestAnimationFrame(render);
+            }
+            render();
+        }
+
+        // [GAME 2]: Chrome Dino Run
+        function runDinoEngine() {
+            document.getElementById('control-hint').innerText = "Press SPACE to Jump";
+            const canvas = document.getElementById('arcadeCanvas'); const ctx = canvas.getContext('2d');
+            let groundY = canvas.height - 35;
+            let dino = { x: 40, y: groundY - 30, w: 22, h: 30, vy: 0, gravity: 0.6, jumpForce: -10.5, grounded: true };
+            let obstacles = []; let frame = 0; let score = 0; let alive = true; let speed = 4.5;
+
+            window.fireDinoJump = function() {
+                if (!alive) { obstacles = []; score = 0; speed = 4.5; frame = 0; dino.y = groundY - 30; dino.vy = 0; dino.grounded = true; document.getElementById('runtime-score').innerText = 0; alive = true; }
+                else if (dino.grounded) { dino.vy = dino.jumpForce; dino.grounded = false; }
+            };
+            canvas.onclick = window.fireDinoJump;
+
+            function render() {
+                if (currentGame !== "dino" || activeApp !== "Game Center") return;
+                ctx.fillStyle = "#f7f7f7"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.strokeStyle = "#666"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, groundY); ctx.lineTo(canvas.width, groundY); ctx.stroke();
+
+                if (alive) {
+                    frame++; score = Math.floor(frame / 10);
+                    document.getElementById('runtime-score').innerText = score;
+                    if (frame % 100 === 0) speed += 0.2; 
+
+                    dino.vy += dino.gravity; dino.y += dino.vy;
+                    if (dino.y >= groundY - dino.h) { dino.y = groundY - dino.h; dino.vy = 0; dino.grounded = true; }
+
+                    if (frame % 90 === 0 || (frame % 140 === 0 && Math.random() > 0.5)) {
+                        obstacles.push({ x: canvas.width, y: groundY - 28, w: 15, h: 28 });
+                    }
+
+                    for (let i = obstacles.length - 1; i >= 0; i--) {
+                        obstacles[i].x -= speed;
+                        if (dino.x < obstacles[i].x + obstacles[i].w && dino.x + dino.w > obstacles[i].x &&
+                            dino.y < obstacles[i].y + obstacles[i].h && dino.y + dino.h > obstacles[i].y) { alive = false; }
+                        if (obstacles[i].x + obstacles[i].w < 0) obstacles.splice(i, 1);
+                    }
+                }
+                ctx.fillStyle = "#535353"; ctx.fillRect(dino.x, dino.y, dino.w, dino.h);
+                ctx.fillStyle = "#fff"; ctx.fillRect(dino.x + 14, dino.y + 4, 3, 3); 
+                ctx.fillStyle = "#8a8a8a"; obstacles.forEach(o => { ctx.fillRect(o.x, o.y, o.w, o.h); });
+
+                if (!alive) { ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.fillStyle = "#fff"; ctx.font = "16px Arial"; ctx.textAlign = "center"; ctx.fillText("Game Over! Space or Click to Retry", canvas.width/2, canvas.height/2); }
+                requestAnimationFrame(render);
+            }
+            render();
+        }
+
+        // [GAME 3]: Car Racer
+        function runCarEngine() {
+            document.getElementById('control-hint').innerText = "Use ◀/▶ Arrow keys or A/D to Drive";
+            const canvas = document.getElementById('arcadeCanvas'); const ctx = canvas.getContext('2d');
+            let player = { x: 175, y: 250, w: 38, h: 55, speed: 6.5 };
+            let obstacles = []; let score = 0; let frame = 0; window.carActive = true;
+
+            window.resetCarGame = function() { player.x = 175; obstacles = []; score = 0; frame = 0; document.getElementById('runtime-score').innerText = 0; window.carActive = true; };
+            canvas.onclick = function() { if(!window.carActive) window.resetCarGame(); };
+
+            function render() {
+                if (currentGame !== "car" || activeApp !== "Game Center") return;
+                ctx.fillStyle = "#444"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = "#2ed573"; ctx.fillRect(0, 0, 40, canvas.height); ctx.fillRect(canvas.width-40, 0, 40, canvas.height); 
+
+                ctx.strokeStyle = "#fff"; ctx.lineWidth = 5; ctx.setLineDash([20, 20]); ctx.lineDashOffset = -frame * 4.5;
+                ctx.beginPath(); ctx.moveTo(canvas.width/2, 0); ctx.lineTo(canvas.width/2, canvas.height); ctx.stroke();
+
+                if (window.carActive) {
+                    frame++;
+                    if (keysPressed["ArrowLeft"] || keysPressed["KeyA"]) player.x -= player.speed;
+                    if (keysPressed["ArrowRight"] || keysPressed["KeyD"]) player.x += player.speed;
+                    if (player.x < 40) player.x = 40; if (player.x > canvas.width - 40 - player.w) player.x = canvas.width - 40 - player.w;
+
+                    if (frame % 65 === 0) {
+                        let lanes = [45, 130, 215, 305];
+                        obstacles.push({ x: lanes[Math.floor(Math.random() * lanes.length)], y: -60, w: 34, h: 52, speed: 4 + Math.floor(score/6) });
+                    }
+
+                    for (let i = obstacles.length - 1; i >= 0; i--) {
+                        obstacles[i].y += obstacles[i].speed;
+                        if (player.x < obstacles[i].x + obstacles[i].w && player.x + player.w > obstacles[i].x &&
+                            player.y < obstacles[i].y + obstacles[i].h && player.y + player.h > obstacles[i].y) { window.carActive = false; }
+                        if (obstacles[i].y > canvas.height) { obstacles.splice(i, 1); score++; document.getElementById('runtime-score').innerText = score; }
+                    }
+                }
+                ctx.fillStyle = "#ff4757"; ctx.fillRect(player.x, player.y, player.w, player.h);
+                ctx.fillStyle = "#7bed9f"; ctx.fillRect(player.x+5, player.y+10, player.w-10, 8); 
+                ctx.fillStyle = "#00a8ff"; obstacles.forEach(o => { ctx.fillRect(o.x, o.y, o.w, o.h); ctx.fillStyle = "#fff"; ctx.fillRect(o.x+4, o.y+35, o.w-8, 8); ctx.fillStyle = "#00a8ff"; });
+
+                if (!window.carActive) { ctx.fillStyle = "rgba(0,0,0,0.6)"; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.fillStyle = "#fff"; ctx.font = "16px Arial"; ctx.textAlign = "center"; ctx.fillText("Crash! Space or Click to Restart", canvas.width/2, canvas.height/2); }
+                requestAnimationFrame(render);
+            }
+            render();
+        }
+
+        // [GAME 4]: Retro Snake
+        function runSnakeEngine() {
+            document.getElementById('control-hint').innerText = "Use ARROW keys or WASD to Slither";
+            const canvas = document.getElementById('arcadeCanvas'); const ctx = canvas.getContext('2d');
+            let size = 16; let snake = [], apple = {}, dx, dy, score, frameCounter;
+            window.snakeAlive = true;
+
+            window.resetSnakeGame = function() {
+                snake = [{x: 160, y: 160}, {x: 144, y: 160}, {x: 128, y: 160}];
+                dx = size; dy = 0; score = 0; frameCounter = 0; window.snakeAlive = true;
+                document.getElementById('runtime-score').innerText = score;
+                placeApple();
+            };
+
+            function placeApple() {
+                apple.x = Math.floor(Math.random() * (canvas.width / size)) * size;
+                apple.y = Math.floor(Math.random() * (canvas.height / size)) * size;
+            }
+            window.resetSnakeGame();
+
+            canvas.onclick = function() { if(!window.snakeAlive) window.resetSnakeGame(); };
+
+            function render() {
+                if (currentGame !== "snake" || activeApp !== "Game Center") return;
+                ctx.fillStyle = "#111111"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                if (window.snakeAlive) {
+                    frameCounter++;
+                    // Capture movement inputs dynamically
+                    if ((keysPressed["ArrowLeft"] || keysPressed["KeyA"]) && dx === 0) { dx = -size; dy = 0; }
+                    if ((keysPressed["ArrowRight"] || keysPressed["KeyD"]) && dx === 0) { dx = size; dy = 0; }
+                    if ((keysPressed["ArrowUp"] || keysPressed["KeyW"]) && dy === 0) { dx = 0; dy = -size; }
+                    if ((keysPressed["ArrowDown"] || keysPressed["KeyS"]) && dy === 0) { dx = 0; dy = size; }
+
+                    // Throttle movement loops safely to match proper classic grid speed
+                    if (frameCounter % 7 === 0) {
+                        let head = { x: snake[0].x + dx, y: snake[0].y + dy };
+                        
+                        // Border Collisions
+                        if (head.x < 0 || head.x >= canvas.width || head.y < 0 || head.y >= canvas.height) { window.snakeAlive = false; }
+                        
+                        // Self Tail Collisions
+                        for(let i=0; i<snake.length; i++) {
+                            if(head.x === snake[i].x && head.y === snake[i].y) window.snakeAlive = false;
+                        }
+
+                        if (window.snakeAlive) {
+                            snake.unshift(head);
+                            if (head.x === apple.x && head.y === apple.y) {
+                                score += 10; document.getElementById('runtime-score').innerText = score; placeApple();
+                            } else { snake.pop(); }
+                        }
+                    }
+                }
+
+                // Draw Apple Target
+                ctx.fillStyle = "#ff4757"; ctx.fillRect(apple.x, apple.y, size-1, size-1);
+                // Draw Snake Body
+                ctx.fillStyle = "#2ed573"; snake.forEach((part, i) => {
+                    ctx.fillStyle = (i === 0) ? "#26af5f" : "#2ed573";
+                    ctx.fillRect(part.x, part.y, size-1, size-1);
+                });
+
+                if (!window.snakeAlive) { ctx.fillStyle = "rgba(0,0,0,0.6)"; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.fillStyle = "#fff"; ctx.font = "16px Arial"; ctx.textAlign = "center"; ctx.fillText("Game Over! Space or Click to Restart", canvas.width/2, canvas.height/2); }
+                requestAnimationFrame(render);
+            }
+            render();
+        }
+
+        // [GAME 5]: Classic Pong
+        function runPongEngine() {
+            document.getElementById('control-hint').innerText = "Move Mouse over Canvas to Track Paddle";
+            const canvas = document.getElementById('arcadeCanvas'); const ctx = canvas.getContext('2d');
+            let pW = 10, pH = 65, p1Y, p2Y, ballX, ballY, vx, vy, score;
+            window.pongActive = true;
+
+            window.resetPongGame = function() {
+                p1Y = 130; p2Y = 130; ballX = canvas.width/2; ballY = canvas.height/2;
+                vx = Math.random() > 0.5 ? 3.5 : -3.5; vy = (Math.random() * 2) - 1;
+                score = 0; window.pongActive = true;
+                document.getElementById('runtime-score').innerText = score;
+            };
+            window.resetPongGame();
+
+            // Direct Mouse Tracking listener for seamless interactive desktop feeling
+            canvas.onmousemove = function(e) {
+                let bounds = canvas.getBoundingClientRect();
+                p1Y = (e.clientY - bounds.top) - pH/2;
+            };
+            canvas.onclick = function() { if(!window.pongActive) window.resetPongGame(); };
+
+            function render() {
+                if (currentGame !== "pong" || activeApp !== "Game Center") return;
+                ctx.fillStyle = "#0f172a"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // Center Divider Net
+                ctx.strokeStyle = "rgba(255,255,255,0.1)"; ctx.lineWidth = 2; ctx.setLineDash([10,10]);
+                ctx.beginPath(); ctx.moveTo(canvas.width/2, 0); ctx.lineTo(canvas.width/2, canvas.height); ctx.stroke();
+
+                if (window.pongActive) {
+                    ballX += vx; ballY += vy;
+
+                    // CPU Opponent Simple Predictive Tracking Logic
+                    if (p2Y + pH/2 < ballY - 10) p2Y += 2.8;
+                    else if (p2Y + pH/2 > ballY + 10) p2Y -= 2.8;
+
+                    // Contain paddles within boundaries
+                    if(p1Y < 0) p1Y = 0; if(p1Y > canvas.height - pH) p1Y = canvas.height - pH;
+                    if(p2Y < 0) p2Y = 0; if(p2Y > canvas.height - pH) p2Y = canvas.height - pH;
+
+                    // Wall Ceiling Bounce Vector loops
+                    if (ballY <= 4 || ballY >= canvas.height - 4) vy = -vy;
+
+                    // Player 1 Paddle Collision Parameters
+                    if (ballX <= 22 && ballX >= 12 && ballY >= p1Y && ballY <= p1Y + pH) {
+                        vx = -vx * 1.05; let deltaY = ballY - (p1Y + pH/2); vy = deltaY * 0.15;
+                        score++; document.getElementById('runtime-score').innerText = score;
+                    }
+                    // Computer Paddle Collision Parameters
+                    if (ballX >= canvas.width - 22 && ballX <= canvas.width - 12 && ballY >= p2Y && ballY <= p2Y + pH) {
+                        vx = -vx * 1.05; let deltaY = ballY - (p2Y + pH/2); vy = deltaY * 0.15;
+                    }
+
+                    // Score Fault Conditions
+                    if (ballX < 0 || ballX > canvas.width) { window.pongActive = false; }
+                }
+
+                // Elements Drawing Phase
+                ctx.fillStyle = "#0078D7"; ctx.fillRect(12, p1Y, pW, pH); // Player Paddle
+                ctx.fillStyle = "#ff4757"; ctx.fillRect(canvas.width - 12 - pW, p2Y, pW, pH); // CPU Paddle
+                ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(ballX, ballY, 5, 0, Math.PI*2); ctx.fill(); // Ball
+
+                if (!window.pongActive) { ctx.fillStyle = "rgba(0,0,0,0.6)"; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.fillStyle = "#fff"; ctx.font = "16px Arial"; ctx.textAlign = "center"; ctx.fillText("Match Lost! Space or Click to Volley Again", canvas.width/2, canvas.height/2); }
+                requestAnimationFrame(render);
+            }
+            render();
+        }
+    </script>
+
+</body></html>
